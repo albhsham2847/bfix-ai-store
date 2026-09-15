@@ -1,52 +1,32 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db";
-import { orders, products } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { getOrders } from "@/lib/store";
-
-export async function GET() {
-  const rows = await getOrders();
-  return NextResponse.json(rows);
-}
+import { createOrder } from "@/lib/store";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const productId = Number(body.productId);
-    const customerName = String(body.customerName ?? "").trim();
-    const phone = String(body.phone ?? "").trim();
-    const quantity = Math.max(1, Math.min(100, Number(body.quantity) || 1));
-    const notes = body.notes ? String(body.notes).slice(0, 1000) : null;
-
-    if (!productId || customerName.length < 2 || phone.length < 6) {
+    const b = await req.json();
+    const customerName = String(b.customerName ?? "").trim();
+    const phone = String(b.phone ?? "").trim();
+    const productId = Number(b.productId);
+    if (!productId || customerName.length < 2 || phone.replace(/\D/g, "").length < 7) {
       return NextResponse.json(
-        { error: "يرجى إدخال الاسم ورقم الهاتف بشكل صحيح" },
+        { error: "يرجى إدخال الاسم ورقم هاتف صحيح" },
         { status: 400 },
       );
     }
-
-    const [product] = await db
-      .select()
-      .from(products)
-      .where(eq(products.id, productId));
-    if (!product) {
-      return NextResponse.json({ error: "المنتج غير موجود" }, { status: 404 });
-    }
-
-    const [order] = await db
-      .insert(orders)
-      .values({
-        productId,
-        productName: product.name,
-        customerName,
-        phone,
-        quantity,
-        notes,
-      })
-      .returning();
-
-    return NextResponse.json({ order, product });
-  } catch {
-    return NextResponse.json({ error: "حدث خطأ غير متوقع" }, { status: 500 });
+    const result = await createOrder({
+      productId,
+      optionId: b.optionId ? Number(b.optionId) : null,
+      quantity: Number(b.quantity) || 1,
+      customerName,
+      phone,
+      email: b.email ? String(b.email).trim().slice(0, 200) : null,
+      telegram: b.telegram ? String(b.telegram).trim().slice(0, 100) : null,
+      customerInput: b.customerInput ? String(b.customerInput).slice(0, 1000) : null,
+      notes: b.notes ? String(b.notes).slice(0, 1000) : null,
+    });
+    return NextResponse.json(result);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "حدث خطأ غير متوقع";
+    return NextResponse.json({ error: msg }, { status: 400 });
   }
 }

@@ -1,0 +1,43 @@
+{
+  "packageId": "com.bfixsoftware.aistore",
+  "host": "REPLACE_WITH_YOUR_DOMAIN",
+  "name": "B-Fix Software | AI Store",
+  "launcherName": "B-Fix Store",
+  "display": "standalone",
+  "themeColor": "#070A12",
+  "themeColorDark": "#070A12",
+  "navigationColor": "#070A12",
+  "navigationColorDark": "#070A12",
+  "navigationDividerColor": "#070A12",
+  "navigationDividerColorDark": "#070A12",
+  "backgroundColor": "#070A12",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://REPLACE_WITH_YOUR_DOMAIN/icons/icon-512.png",
+  "maskableIconUrl": "https://REPLACE_WITH_YOUR_DOMAIN/icons/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "bfix"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    { "name": "الخدمات", "shortName": "الخدمات", "url": "/search", "chosenIconUrl": "https://REPLACE_WITH_YOUR_DOMAIN/icons/icon-192.png" },
+    { "name": "طلباتي", "shortName": "طلباتي", "url": "/orders", "chosenIconUrl": "https://REPLACE_WITH_YOUR_DOMAIN/icons/icon-192.png" }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://REPLACE_WITH_YOUR_DOMAIN/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": { "enabled": false },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://REPLACE_WITH_YOUR_DOMAIN/",
+  "minSdkVersion": 21,
+  "orientation": "portrait",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": []
+}

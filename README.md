@@ -1,26 +1,36 @@
 # B-Fix Software | AI Store
 
-متجر رقمي فخم وسريع (PWA قابل للتثبيت على أندرويد) مبني بـ Next.js 16 + PostgreSQL (Drizzle ORM).
+متجر رقمي فخم وسريع — تطبيق Android (TWA) مبني على PWA بـ **Next.js 16 + PostgreSQL (Drizzle ORM)**.
 
-## الخدمات
-أدوات البرمجة · إيجار وشير الأدوات · اشتراكات الذكاء الاصطناعي · شحن التطبيقات والألعاب · حسابات ببجي · بطائق إلكترونية · دعاية وإعلان · خدمات تسويق · توثيق برامج التواصل · حلول تقنية · برمجة المواقع والتطبيقات
+## المزايا
+- واجهة عربية RTL فاخرة، سريعة، قريبة من تطبيقات Android الأصلية.
+- 11 قسم خدمات: أدوات البرمجة، إيجار الأدوات، اشتراكات الذكاء الاصطناعي، شحن الألعاب، حسابات ببجي، بطائق إلكترونية، دعاية وإعلان، تسويق، توثيق، حلول تقنية، برمجة المواقع والتطبيقات.
+- مسار طلب كامل: اختيار المدة/الباقة → بيانات العميل → ملخص → إنشاء طلب برقم `BF-XXXXXXXX` → إرسال عبر WhatsApp / Telegram برسالة احترافية جاهزة.
+- تتبع الطلب بالرقم من صفحة "طلباتي".
+- لوحة إدارة `/admin`: الأقسام، الخدمات، الأسعار، الخيارات، الصور، الطلبات وحالاتها.
+- PWA + Service Worker + Android APK/AAB عبر GitHub Actions.
 
-## التشغيل
+## التشغيل محلياً
 ```bash
 npm install
-cp .env.example .env   # ضع DATABASE_URL
+cp .env.example .env      # عدّل DATABASE_URL و ADMIN_PASSWORD
 npx drizzle-kit push
 npm run dev
 ```
 
-## تثبيت التطبيق على أندرويد
-افتح الموقع في Chrome ثم اضغط "تثبيت التطبيق" أو من القائمة: **إضافة إلى الشاشة الرئيسية**.
-لتحويله إلى APK استخدم [PWABuilder](https://www.pwabuilder.com) أو Bubblewrap (TWA).
+## متغيرات البيئة
+| المتغير | الوصف |
+|---|---|
+| `DATABASE_URL` | اتصال PostgreSQL |
+| `ADMIN_PASSWORD` | كلمة مرور لوحة الإدارة `/admin` |
+| `ANDROID_SHA256_FINGERPRINT` | بصمة مفتاح توقيع Android (لملف assetlinks) |
 
-## لوحة الطلبات
-`/admin/orders`
+## قاعدة البيانات
+`categories` · `products` · `product_options` · `customers` · `orders` · `order_items`
+(يتم تعبئة الأقسام والخدمات تلقائياً عند أول تشغيل إذا كانت فارغة.)
+
+## Android APK / AAB
+راجع [`android/README.md`](android/README.md) — بناء آلي عبر GitHub Actions أو يدوياً بـ Bubblewrap.
 
 ## التواصل
-- الإدارة: +967777728478
-- تليجرام: https://t.me/bfixSoftware
-- فيسبوك: https://www.facebook.com/share/1BbyBGMfL2/
+- الإدارة: +967777728478 · تليجرام: https://t.me/bfixSoftware · فيسبوك: https://www.facebook.com/share/1BbyBGMfL2/

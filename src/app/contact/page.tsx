@@ -36,7 +36,8 @@ export default function ContactPage() {
         ))}
       </div>
       <p className="pt-2 text-center text-xs text-white/40">
-        B-Fix Software | AI Store © {new Date().getFullYear()}
+        B-Fix Software | AI Store © {new Date().getFullYear()} ·{" "}
+        <a href="/admin" className="text-white/30">الإدارة</a>
       </p>
     </div>
   );

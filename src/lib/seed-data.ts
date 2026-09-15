@@ -180,3 +180,27 @@ export const SEED_CATEGORIES: SeedCategory[] = [
     ],
   },
 ];
+
+export const SEED_OPTIONS: {
+  productName: string;
+  options: { name: string; price: string }[];
+}[] = [
+  { productName: "Unlock Tool - سنة", options: [
+    { name: "3 أشهر", price: "18" }, { name: "6 أشهر", price: "30" }, { name: "12 شهر", price: "45" } ] },
+  { productName: "TSM Tool - سنة", options: [
+    { name: "6 أشهر", price: "25" }, { name: "12 شهر", price: "40" } ] },
+  { productName: "Unlock Tool - إيجار 6 ساعات", options: [
+    { name: "6 ساعات", price: "3" }, { name: "12 ساعة", price: "4" }, { name: "24 ساعة", price: "5" } ] },
+  { productName: "ChatGPT Plus - شهر", options: [
+    { name: "شهر", price: "20" }, { name: "3 أشهر", price: "57" }, { name: "سنة", price: "200" } ] },
+  { productName: "Gemini Pro (Advanced) - سنة", options: [
+    { name: "شهر", price: "5" }, { name: "سنة", price: "35" } ] },
+  { productName: "Claude Pro - شهر", options: [
+    { name: "شهر", price: "20" }, { name: "3 أشهر", price: "57" } ] },
+  { productName: "توثيق انستقرام (Meta Verified)", options: [
+    { name: "شهر", price: "20" }, { name: "3 أشهر", price: "57" }, { name: "سنة", price: "220" } ] },
+  { productName: "توثيق فيسبوك (Meta Verified)", options: [
+    { name: "شهر", price: "20" }, { name: "3 أشهر", price: "57" } ] },
+  { productName: "سيرفر VPS شهري", options: [
+    { name: "2GB RAM", price: "7" }, { name: "4GB RAM", price: "12" }, { name: "8GB RAM", price: "22" } ] },
+];
