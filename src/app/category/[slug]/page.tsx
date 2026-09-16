@@ -17,11 +17,10 @@ export default async function CategoryPage({
 
   return (
     <div className="space-y-5 pt-4">
-      <Link href="/" className="text-xs font-bold text-white/50">
-        ← الرئيسية
-      </Link>
+      <Link href="/" className="text-xs font-bold" style={{ color: "var(--text-tertiary)" }}>← الرئيسية</Link>
       <section
-        className={`fade-up relative overflow-hidden rounded-3xl bg-gradient-to-br ${cat.gradient} p-5 text-black shadow-xl`}
+        className={`fade-up relative overflow-hidden bg-gradient-to-br ${cat.gradient} p-5 text-black shadow-xl`}
+        style={{ borderRadius: "var(--radius-xl)" }}
       >
         <div className="text-4xl">{cat.icon}</div>
         <h1 className="mt-2 text-2xl font-black">{cat.name}</h1>

@@ -3,19 +3,19 @@ import { CONTACT } from "@/lib/seed-data";
 export const metadata = { title: "تواصل معنا" };
 
 const links = [
-  { href: CONTACT.whatsapp, label: "واتساب", sub: CONTACT.phoneDisplay, color: "bg-[#25D366] text-black", icon: "💬" },
-  { href: `tel:${CONTACT.phone}`, label: "اتصال مباشر", sub: CONTACT.phoneDisplay, color: "bg-white/10 text-white", icon: "📞" },
-  { href: CONTACT.telegram, label: "تليجرام", sub: "@bfixSoftware", color: "bg-[#229ED9] text-white", icon: "✈️" },
-  { href: CONTACT.facebook, label: "فيسبوك", sub: "صفحتنا الرسمية", color: "bg-[#1877F2] text-white", icon: "📘" },
+  { href: CONTACT.whatsapp, label: "واتساب", sub: CONTACT.phoneDisplay, icon: "💬", bg: "#25D366", fg: "#000" },
+  { href: `tel:${CONTACT.phone}`, label: "اتصال مباشر", sub: CONTACT.phoneDisplay, icon: "📞", bg: "var(--surface-2)", fg: "var(--text-primary)" },
+  { href: CONTACT.telegram, label: "تليجرام", sub: "@bfixSoftware", icon: "✈️", bg: "#229ED9", fg: "#fff" },
+  { href: CONTACT.facebook, label: "فيسبوك", sub: "صفحتنا الرسمية", icon: "📘", bg: "#1877F2", fg: "#fff" },
 ];
 
 export default function ContactPage() {
   return (
     <div className="space-y-4 pt-4">
-      <section className="glass fade-up rounded-3xl p-5 text-center">
+      <section className="surface fade-up p-5 text-center" style={{ borderRadius: "var(--radius-xl)" }}>
         <div className="text-5xl">🤝</div>
         <h1 className="mt-2 text-xl font-black">تواصل مع الإدارة</h1>
-        <p className="mt-1 text-sm text-white/60">فريقنا متاح على مدار الساعة للرد على استفساراتك وتنفيذ طلباتك</p>
+        <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>فريقنا متاح على مدار الساعة للرد على استفساراتك</p>
       </section>
       <div className="grid gap-2.5">
         {links.map((l) => (
@@ -24,7 +24,8 @@ export default function ContactPage() {
             href={l.href}
             target="_blank"
             rel="noreferrer"
-            className={`card-hover flex items-center gap-3 rounded-2xl p-4 ${l.color} border border-white/10`}
+            className="card-hover flex items-center gap-3 p-4"
+            style={{ borderRadius: "var(--radius-md)", background: l.bg, color: l.fg, border: "1px solid var(--border)" }}
           >
             <span className="text-2xl">{l.icon}</span>
             <div className="flex-1">
@@ -35,9 +36,9 @@ export default function ContactPage() {
           </a>
         ))}
       </div>
-      <p className="pt-2 text-center text-xs text-white/40">
+      <p className="pt-2 text-center text-xs" style={{ color: "var(--text-tertiary)" }}>
         B-Fix Software | AI Store © {new Date().getFullYear()} ·{" "}
-        <a href="/admin" className="text-white/30">الإدارة</a>
+        <a href="/admin" style={{ color: "var(--text-tertiary)" }}>الإدارة</a>
       </p>
     </div>
   );

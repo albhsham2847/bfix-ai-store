@@ -5,6 +5,9 @@ import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import Header from "@/components/Header";
 import PwaRegister from "@/components/PwaRegister";
+import CustomerAuthModal from "@/components/auth/CustomerAuthModal";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { CustomerProvider } from "@/contexts/CustomerContext";
 
 const tajawal = Tajawal({
   subsets: ["arabic", "latin"],
@@ -26,9 +29,7 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "B-Fix Store",
   },
-  icons: {
-    apple: "/icons/apple-icon.png",
-  },
+  icons: { apple: "/icons/apple-icon.png" },
 };
 
 export const viewport: Viewport = {
@@ -41,14 +42,19 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ar" dir="rtl" className={tajawal.variable}>
+    <html lang="ar" dir="rtl" className={tajawal.variable} suppressHydrationWarning>
       <body className="antialiased">
-        <div className="mx-auto min-h-dvh w-full max-w-md md:max-w-2xl lg:max-w-5xl">
-          <Header />
-          <main className="safe-bottom px-4">{children}</main>
-        </div>
-        <BottomNav />
-        <PwaRegister />
+        <ThemeProvider>
+          <CustomerProvider>
+            <div className="mx-auto min-h-dvh w-full max-w-md md:max-w-2xl lg:max-w-5xl">
+              <Header />
+              <main className="safe-bottom px-4">{children}</main>
+            </div>
+            <BottomNav />
+            <CustomerAuthModal />
+            <PwaRegister />
+          </CustomerProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -14,31 +14,34 @@ export default async function Home() {
   return (
     <div className="space-y-7 pt-4">
       {/* Hero */}
-      <section className="fade-up relative overflow-hidden rounded-3xl border border-gold/20 bg-gradient-to-br from-[#151a2e] via-[#0e1322] to-[#1b1408] p-5">
-        <div className="absolute -left-10 -top-10 h-40 w-40 rounded-full bg-gold/20 blur-3xl" />
-        <div className="absolute -bottom-12 -right-6 h-40 w-40 rounded-full bg-indigo-500/25 blur-3xl" />
+      <section className="fade-up relative overflow-hidden" style={{ borderRadius: "var(--radius-xl)", border: "1px solid var(--border)", background: "var(--surface)", padding: "1.25rem" }}>
+        <div className="absolute -left-10 -top-10 h-40 w-40 rounded-full blur-3xl" style={{ background: "rgba(212,160,23,0.15)" }} />
+        <div className="absolute -bottom-12 -right-6 h-40 w-40 rounded-full blur-3xl" style={{ background: "rgba(108,63,197,0.15)" }} />
         <div className="relative">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-[11px] font-bold text-gold ring-1 ring-gold/30">
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold"
+            style={{ background: "var(--surface-2)", color: "var(--gold)", border: "1px solid var(--border)" }}
+          >
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
             خدمة فورية 24/7
           </span>
-          <h1 className="mt-3 text-2xl font-black leading-snug">
+          <h1 className="mt-3 text-2xl font-black leading-snug" style={{ color: "var(--text-primary)" }}>
             كل ما تحتاجه من <span className="gold-text">أدوات</span>،{" "}
             <span className="gold-text">ذكاء اصطناعي</span> وخدمات رقمية
           </h1>
-          <p className="mt-2 text-sm text-white/60">
-            تفعيلات رسمية، اشتراكات موثوقة، شحن فوري، ودعم فني مباشر عبر
-            واتساب وتليجرام.
+          <p className="mt-2 text-sm" style={{ color: "var(--text-secondary)" }}>
+            تفعيلات رسمية، اشتراكات موثوقة، شحن فوري، ودعم فني مباشر عبر واتساب وتليجرام.
           </p>
           <div className="mt-4 flex gap-2">
-            <Link href="/search" className="gold-btn rounded-xl px-4 py-2.5 text-sm font-black">
+            <Link href="/search" className="gold-btn oneui-btn">
               تصفح الخدمات
             </Link>
             <a
               href={CONTACT.whatsapp}
               target="_blank"
               rel="noreferrer"
-              className="rounded-xl bg-white/5 px-4 py-2.5 text-sm font-bold ring-1 ring-white/10"
+              className="oneui-btn"
+              style={{ background: "var(--surface-2)", color: "var(--text-primary)", border: "1px solid var(--border)" }}
             >
               تواصل معنا
             </a>
@@ -53,9 +56,9 @@ export default async function Home() {
           ["11", "قسم خدمات"],
           ["24/7", "دعم فني"],
         ].map(([v, l]) => (
-          <div key={l} className="glass rounded-2xl p-3 text-center">
-            <div className="text-lg font-black text-gold">{v}</div>
-            <div className="text-[11px] text-white/55">{l}</div>
+          <div key={l} className="surface-2 text-center" style={{ borderRadius: "var(--radius-md)", padding: "0.75rem" }}>
+            <div className="text-lg font-black" style={{ color: "var(--gold)" }}>{v}</div>
+            <div className="text-[11px]" style={{ color: "var(--text-tertiary)" }}>{l}</div>
           </div>
         ))}
       </section>
@@ -64,7 +67,7 @@ export default async function Home() {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-black">الأقسام</h2>
-          <Link href="/search" className="text-xs font-bold text-gold">
+          <Link href="/search" className="text-xs font-bold" style={{ color: "var(--gold)" }}>
             عرض الكل
           </Link>
         </div>
@@ -73,15 +76,15 @@ export default async function Home() {
             <Link
               key={c.id}
               href={`/category/${c.slug}`}
-              style={{ animationDelay: `${i * 40}ms` }}
-              className="glass card-hover fade-up flex flex-col items-center gap-2 rounded-2xl p-3 text-center"
+              className="surface card-hover fade-up flex flex-col items-center gap-2 text-center"
+              style={{ borderRadius: "var(--radius-md)", padding: "0.75rem", animationDelay: `${i * 40}ms` }}
             >
               <div
                 className={`grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br ${c.gradient} text-2xl shadow-lg`}
               >
                 {c.icon}
               </div>
-              <span className="text-[12px] font-bold leading-tight">{c.name}</span>
+              <span className="text-[12px] font-bold leading-tight" style={{ color: "var(--text-primary)" }}>{c.name}</span>
             </Link>
           ))}
         </div>
@@ -100,9 +103,9 @@ export default async function Home() {
       </section>
 
       {/* Trust */}
-      <section className="glass rounded-3xl p-5">
+      <section className="surface" style={{ borderRadius: "var(--radius-xl)", padding: "1.25rem" }}>
         <h2 className="text-base font-black">لماذا B-Fix Software؟</h2>
-        <ul className="mt-3 space-y-2 text-sm text-white/70">
+        <ul className="mt-3 space-y-2 text-sm" style={{ color: "var(--text-secondary)" }}>
           <li>✅ تفعيلات واشتراكات رسمية 100%</li>
           <li>⚡ تسليم فوري خلال دقائق</li>
           <li>🛡️ ضمان كامل على جميع الخدمات</li>
