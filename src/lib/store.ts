@@ -9,11 +9,26 @@ import {
 } from "@/db/schema";
 import { asc, desc, eq, and, count, sql } from "drizzle-orm";
 import { SEED_CATEGORIES, SEED_OPTIONS } from "./seed-data";
+import { migrateSchema } from "./migrate";
 
 let seeded = false;
+let migrated = false;
 
 export async function ensureSeeded() {
   if (seeded) return;
+
+  // Run migration if tables don't exist
+  if (!migrated) {
+    try {
+      await db.select({ value: count() }).from(categories);
+      migrated = true;
+    } catch {
+      // Table doesn't exist → run migration
+      await migrateSchema();
+      migrated = true;
+    }
+  }
+
   const [{ value }] = await db.select({ value: count() }).from(categories);
   if (Number(value) === 0) {
     for (let i = 0; i < SEED_CATEGORIES.length; i++) {
