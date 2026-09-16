@@ -29,10 +29,25 @@ export async function ensureSeeded() {
     }
   }
 
-  const [{ value }] = await db.select({ value: count() }).from(categories);
-  if (Number(value) === 0) {
-    for (let i = 0; i < SEED_CATEGORIES.length; i++) {
-      const c = SEED_CATEGORIES[i];
+  // Check and seed categories/products individually for resilience
+  const existingCats = await db.select().from(categories);
+  const existingCatSlugs = new Set(existingCats.map((c) => c.slug));
+  const existingProductCounts = new Map<number, number>();
+  for (const cat of existingCats) {
+    const [{ value }] = await db
+      .select({ value: count() })
+      .from(products)
+      .where(eq(products.categoryId, cat.id));
+    existingProductCounts.set(cat.id, Number(value));
+  }
+
+  for (let i = 0; i < SEED_CATEGORIES.length; i++) {
+    const c = SEED_CATEGORIES[i];
+    let catId: number;
+    const existing = existingCats.find((ec) => ec.slug === c.slug);
+    if (existing) {
+      catId = existing.id;
+    } else {
       const [cat] = await db
         .insert(categories)
         .values({
@@ -43,18 +58,22 @@ export async function ensureSeeded() {
           gradient: c.gradient,
           sortOrder: i,
         })
-        .onConflictDoNothing()
         .returning();
-      if (!cat) continue;
+      catId = cat.id;
+    }
+    // Seed products if category has none
+    const prodCount = existingProductCounts.get(catId) ?? 0;
+    if (prodCount === 0) {
       await db.insert(products).values(
         c.products.map((p, idx) => ({
-          categoryId: cat.id,
+          categoryId: catId,
           name: p.name,
           description: p.description,
           price: p.price,
           unit: p.unit ?? "",
           badge: p.badge ?? null,
           featured: p.featured ?? false,
+          requiredInfo: c.requiredInfo ?? null,
           sortOrder: idx,
         })),
       );

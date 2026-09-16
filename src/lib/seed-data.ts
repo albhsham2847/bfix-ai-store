@@ -21,6 +21,7 @@ export type SeedCategory = {
   description: string;
   icon: string;
   gradient: string;
+  requiredInfo?: string;
   products: SeedProduct[];
 };
 
@@ -31,6 +32,7 @@ export const SEED_CATEGORIES: SeedCategory[] = [
     description: "تفعيل رسمي لأشهر أدوات صيانة وبرمجة الهواتف",
     icon: "🛠️",
     gradient: "from-amber-400 to-orange-600",
+    requiredInfo: "اسم المستخدم (Username) للأداة أو البريد الإلكتروني",
     products: [
       { name: "Unlock Tool - سنة", description: "تفعيل رسمي لمدة 12 شهر مع دعم فني كامل", price: "45", unit: "سنة", badge: "الأكثر طلباً", featured: true },
       { name: "Unlock Tool - 3 أشهر", description: "تفعيل رسمي لمدة 3 أشهر", price: "18", unit: "3 أشهر" },
@@ -47,6 +49,7 @@ export const SEED_CATEGORIES: SeedCategory[] = [
     description: "استخدم الأدوات بالساعة أو اليوم بدون شراء ترخيص",
     icon: "⏱️",
     gradient: "from-cyan-400 to-blue-600",
+    requiredInfo: "اسم المستخدم للأداة + الوقت المناسب لبدء الجلسة",
     products: [
       { name: "Unlock Tool - إيجار 6 ساعات", description: "حساب شير لمدة 6 ساعات", price: "3", unit: "6 ساعات", badge: "سريع", featured: true },
       { name: "Unlock Tool - إيجار 24 ساعة", description: "حساب شير لمدة يوم كامل", price: "5", unit: "24 ساعة" },
@@ -61,6 +64,7 @@ export const SEED_CATEGORIES: SeedCategory[] = [
     description: "Gemini Pro و ChatGPT Plus وأكثر بأفضل الأسعار",
     icon: "🤖",
     gradient: "from-violet-500 to-fuchsia-600",
+    requiredInfo: "البريد الإلكتروني للحساب المراد تفعيل الاشتراك عليه",
     products: [
       { name: "ChatGPT Plus - شهر", description: "اشتراك رسمي GPT-4o على حسابك الخاص", price: "20", unit: "شهر", badge: "الأشهر", featured: true },
       { name: "Gemini Pro (Advanced) - سنة", description: "اشتراك Google One AI Premium مع 2TB", price: "35", unit: "سنة", badge: "عرض", featured: true },
@@ -76,6 +80,7 @@ export const SEED_CATEGORIES: SeedCategory[] = [
     description: "شحن فوري لشدات ببجي، فري فاير، تيك توك وغيرها",
     icon: "🎮",
     gradient: "from-emerald-400 to-teal-600",
+    requiredInfo: "ID اللاعب / الحساب",
     products: [
       { name: "شدات ببجي 60 UC", description: "شحن فوري عبر ID", price: "1", unit: "60 UC" },
       { name: "شدات ببجي 325 UC", description: "شحن فوري عبر ID", price: "5", unit: "325 UC", featured: true },
@@ -92,6 +97,7 @@ export const SEED_CATEGORIES: SeedCategory[] = [
     description: "حسابات موثوقة ومضمونة بمستويات وسكنات مميزة",
     icon: "🏆",
     gradient: "from-yellow-400 to-amber-600",
+    requiredInfo: "طريقة التواصل المفضلة لاستلام بيانات الحساب",
     products: [
       { name: "حساب ببجي - مستوى 60+", description: "حساب نظيف مع سكنات متنوعة وربط كامل", price: "25", unit: "حساب" },
       { name: "حساب ببجي - سكنات نادرة", description: "يحتوي على أزياء أسطورية وسلاح مطور", price: "80", unit: "حساب", badge: "مميز", featured: true },
@@ -105,6 +111,7 @@ export const SEED_CATEGORIES: SeedCategory[] = [
     description: "iTunes, Google Play, PlayStation, Steam, Razer Gold",
     icon: "💳",
     gradient: "from-rose-400 to-pink-600",
+    requiredInfo: "البريد الإلكتروني لاستلام كود البطاقة",
     products: [
       { name: "Google Play 10$", description: "بطاقة أمريكية - تسليم فوري", price: "11", unit: "10$" },
       { name: "iTunes 25$", description: "بطاقة أمريكية - تسليم فوري", price: "26.5", unit: "25$", featured: true },
@@ -120,6 +127,7 @@ export const SEED_CATEGORIES: SeedCategory[] = [
     description: "حملات إعلانية ممولة على فيسبوك، انستقرام، تيك توك وجوجل",
     icon: "📢",
     gradient: "from-sky-400 to-indigo-600",
+    requiredInfo: "رابط الصفحة/الحساب + وصف مختصر للمنتج المستهدف",
     products: [
       { name: "إعلان ممول فيسبوك/انستقرام", description: "إدارة وتنفيذ حملة بميزانية 50$", price: "65", unit: "حملة", featured: true },
       { name: "إعلان ممول تيك توك", description: "حملة مستهدفة بميزانية 50$", price: "65", unit: "حملة" },
@@ -133,6 +141,7 @@ export const SEED_CATEGORIES: SeedCategory[] = [
     description: "زيادة متابعين، لايكات، مشاهدات وإدارة حسابات",
     icon: "📈",
     gradient: "from-lime-400 to-green-600",
+    requiredInfo: "رابط الحساب / المنشور",
     products: [
       { name: "1000 متابع انستقرام", description: "متابعين حقيقيين بضمان", price: "6", unit: "1000 متابع" },
       { name: "1000 متابع تيك توك", description: "متابعين حقيقيين بضمان", price: "6", unit: "1000 متابع", featured: true },
@@ -146,6 +155,7 @@ export const SEED_CATEGORIES: SeedCategory[] = [
     description: "العلامة الزرقاء لفيسبوك، انستقرام، تيك توك وتليجرام",
     icon: "✅",
     gradient: "from-blue-400 to-blue-700",
+    requiredInfo: "رابط الحساب + اسم صاحب الحساب",
     products: [
       { name: "توثيق انستقرام (Meta Verified)", description: "علامة زرقاء رسمية شهرية", price: "20", unit: "شهر", featured: true },
       { name: "توثيق فيسبوك (Meta Verified)", description: "علامة زرقاء رسمية شهرية", price: "20", unit: "شهر" },
@@ -159,6 +169,7 @@ export const SEED_CATEGORIES: SeedCategory[] = [
     description: "استضافة، سيرفرات، أتمتة، بوتات وحلول ذكاء اصطناعي",
     icon: "⚡",
     gradient: "from-orange-400 to-red-600",
+    requiredInfo: "وصف المشروع أو المتطلبات",
     products: [
       { name: "بوت تليجرام مخصص", description: "بوت متكامل حسب متطلباتك", price: "60", unit: "مشروع", featured: true },
       { name: "سيرفر VPS شهري", description: "4GB RAM - 80GB SSD", price: "12", unit: "شهر" },
@@ -172,6 +183,7 @@ export const SEED_CATEGORIES: SeedCategory[] = [
     description: "متاجر إلكترونية، تطبيقات أندرويد و iOS، أنظمة إدارة",
     icon: "💻",
     gradient: "from-indigo-400 to-purple-700",
+    requiredInfo: "وصف المشروع والمميزات المطلوبة",
     products: [
       { name: "موقع تعريفي احترافي", description: "تصميم عصري متجاوب مع لوحة تحكم", price: "150", unit: "مشروع" },
       { name: "متجر إلكتروني متكامل", description: "بوابات دفع، إدارة منتجات وطلبات", price: "400", unit: "مشروع", featured: true },
