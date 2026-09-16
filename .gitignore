@@ -6,3 +6,7 @@ tsconfig.tsbuildinfo
 android/android.keystore
 android/app/
 android/build/
+tsconfig.tsbuildinfo
+android/android.keystore
+android/app/
+android/build/

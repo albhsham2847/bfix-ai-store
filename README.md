@@ -34,3 +34,26 @@ npm run dev
 
 ## التواصل
 - الإدارة: +967777728478 · تليجرام: https://t.me/bfixSoftware · فيسبوك: https://www.facebook.com/share/1BbyBGMfL2/
+
+---
+
+## بناء Android APK/AAB (خطوات مطلوبة منك)
+
+### الخطوة 1: إنشاء ملف workflow يدوياً
+بسبب صلاحية التوكن، يجب إنشاء ملف workflow يدوياً:
+
+1. ادخل: https://github.com/albhsham2847/bfix-ai-store/new/main?filename=.github%2Fworkflows%2Fandroid.yml
+2. انسخ محتوى الملف من: [`android/workflow-reference.md`](android/workflow-reference.md)
+3. Commit مباشرة على branch `main`
+
+### الخطوة 2: أضف Secrets في GitHub
+https://github.com/albhsham2847/bfix-ai-store/settings/secrets/actions
+
+| Secret | Value |
+|---|---|
+| `APP_HOST` | رابط استضافتك (بدون https://) |
+| `KEYSTORE_PASSWORD` | كلمة مرور اختيارية |
+| `KEY_PASSWORD` | كلمة مرور اختيارية |
+
+### الخطوة 3: شغّل الـ workflow
+GitHub → Actions → Build Android APK/AAB → Run workflow
