@@ -86,19 +86,16 @@ export async function migrateSchema() {
 
   `);
 
-  // Add payment columns idempotently (runs every time but IF NOT EXISTS is safe)
-  await db.execute(sql`
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_account TEXT;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_proof TEXT;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_reviewed_at TIMESTAMP;
-    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_reject_reason TEXT;
-  `);
-
-  // Add payment_status with default if missing
-  try {
-    await db.execute(sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'awaiting'`);
-  } catch {
-    // Column may already exist with different constraint
+  // Add payment columns idempotently (each statement separate for pg driver)
+  const alterCols = [
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_account TEXT",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_proof TEXT",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_reviewed_at TIMESTAMP",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_reject_reason TEXT",
+  ];
+  for (const stmt of alterCols) {
+    try { await db.execute(sql.raw(stmt)); } catch { /* column exists */ }
   }
+  try { await db.execute(sql.raw("ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'awaiting'")); } catch { /* exists */ }
 }
