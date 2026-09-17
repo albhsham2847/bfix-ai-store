@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useCustomer } from "@/contexts/CustomerContext";
 import { PAYMENT_METHODS, type PaymentMethodId } from "@/db/schema";
+import { playNotificationSound, sendBrowserNotification } from "@/lib/notify";
+import ImagePicker from "./ImagePicker";
 
 type Option = { id: number; name: string; price: string };
 type Step = "form" | "payment" | "confirm" | "proof" | "done";
@@ -41,6 +43,7 @@ export default function OrderForm({
   const [orderId, setOrderId] = useState(0);
   const [payMethod, setPayMethod] = useState<PaymentMethodId | "">("");
   const [proofText, setProofText] = useState("");
+  const [proofImage, setProofImage] = useState("");
   const [proofSubmitted, setProofSubmitted] = useState(false);
 
   useEffect(() => {
@@ -106,14 +109,14 @@ export default function OrderForm({
   }
 
   async function submitProof() {
-    if (!proofText.trim()) return setError("يرجى إدخال رقم/وصف السند أو رابط لقطة الشاشة");
+    if (!proofText.trim() && !proofImage) return setError("يرجى إرسال إثبات الدفع (صورة أو نص)");
     setLoading(true);
     setError("");
     try {
       const res = await fetch(`/api/orders/${orderId}/proof`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ proof: proofText.trim() }),
+        body: JSON.stringify({ proof: proofText.trim(), image: proofImage || null }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "خطأ");
@@ -168,15 +171,16 @@ export default function OrderForm({
           <div style={{ color: "var(--text-secondary)" }}>المبلغ المطلوب: <span className="font-black" style={{ color: "var(--gold)" }}>${total.toLocaleString()}</span></div>
         </div>
 
+        <ImagePicker label="صورة إثبات الدفع (الكاميرا أو المعرض)" onImage={setProofImage} />
         <div>
           <label className="mb-1 block text-xs font-bold" style={{ color: "var(--text-secondary)" }}>
-            رقم السند / رابط لقطة الشاشة / وصف التحويل
+            أو اكتب رقم السند / وصف التحويل
           </label>
           <textarea
             value={proofText}
             onChange={(e) => setProofText(e.target.value)}
-            rows={3}
-            placeholder="مثال: رقم التحويل 123456 أو رابط صورة الإثبات"
+            rows={2}
+            placeholder="مثال: رقم التحويل 123456"
             className={inputCls}
           />
         </div>
