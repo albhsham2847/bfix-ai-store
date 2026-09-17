@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { db, pool } from "@/db";
 import { sql } from "drizzle-orm";
 
 /**
@@ -86,16 +86,16 @@ export async function migrateSchema() {
 
   `);
 
-  // Add payment columns idempotently (each statement separate for pg driver)
+  // Add payment columns idempotently (use pool directly for raw DDL)
   const alterCols = [
     "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT",
     "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_account TEXT",
     "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_proof TEXT",
     "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_reviewed_at TIMESTAMP",
     "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_reject_reason TEXT",
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status TEXT DEFAULT 'awaiting'",
   ];
   for (const stmt of alterCols) {
-    try { await db.execute(sql.raw(stmt)); } catch { /* column exists */ }
+    try { await pool.query(stmt); } catch { /* column already exists — safe to ignore */ }
   }
-  try { await db.execute(sql.raw("ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'awaiting'")); } catch { /* exists */ }
 }
