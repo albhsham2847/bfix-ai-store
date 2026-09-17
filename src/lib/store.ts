@@ -224,6 +224,7 @@ export type CreateOrderInput = {
   telegram?: string | null;
   customerInput?: string | null;
   notes?: string | null;
+  paymentMethod: string;
 };
 
 function genCode() {
@@ -292,6 +293,7 @@ export async function createOrder(input: CreateOrderInput) {
         quantity: qty,
         total: subtotal,
         notes: input.notes || null,
+        paymentMethod: input.paymentMethod,
       })
       .returning();
 
@@ -311,4 +313,29 @@ export async function createOrder(input: CreateOrderInput) {
 
     return { order, items: [item], product };
   });
+}
+
+export async function submitPaymentProof(orderId: number, proof: string) {
+  const [order] = await db.select().from(orders).where(eq(orders.id, orderId));
+  if (!order) throw new Error("الطلب غير موجود");
+  await db
+    .update(orders)
+    .set({ paymentProof: proof, paymentStatus: "submitted", updatedAt: new Date() })
+    .where(eq(orders.id, orderId));
+  return true;
+}
+
+export async function reviewPayment(orderId: number, status: "accepted" | "rejected", reason?: string) {
+  const [order] = await db.select().from(orders).where(eq(orders.id, orderId));
+  if (!order) throw new Error("الطلب غير موجود");
+  await db
+    .update(orders)
+    .set({
+      paymentStatus: status,
+      paymentReviewedAt: new Date(),
+      adminNote: reason || null,
+      updatedAt: new Date(),
+    })
+    .where(eq(orders.id, orderId));
+  return true;
 }

@@ -1,14 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  buildOrderMessage,
-  whatsappLink,
-  telegramLink,
-} from "@/lib/order-message";
 import { useCustomer } from "@/contexts/CustomerContext";
+import { PAYMENT_METHODS, type PaymentMethodId } from "@/db/schema";
 
 type Option = { id: number; name: string; price: string };
+type Step = "form" | "payment" | "confirm" | "proof" | "done";
 
 type Props = {
   productId: number;
@@ -19,7 +16,7 @@ type Props = {
   options: Option[];
 };
 
-type Step = "form" | "summary" | "done";
+const inputCls = "oneui-input";
 
 export default function OrderForm({
   productId,
@@ -41,8 +38,11 @@ export default function OrderForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [code, setCode] = useState("");
+  const [orderId, setOrderId] = useState(0);
+  const [payMethod, setPayMethod] = useState<PaymentMethodId | "">("");
+  const [proofText, setProofText] = useState("");
+  const [proofSubmitted, setProofSubmitted] = useState(false);
 
-  // Auto-fill from logged-in customer
   useEffect(() => {
     if (customer) {
       if (!name) setName(customer.name);
@@ -54,24 +54,7 @@ export default function OrderForm({
   const option = options.find((o) => o.id === optionId) ?? null;
   const unitPrice = Number(option?.price ?? basePrice);
   const total = unitPrice * qty;
-
-  const message = useMemo(
-    () =>
-      buildOrderMessage({
-        code: code || "—",
-        productName,
-        optionName: option?.name,
-        quantity: qty,
-        unitPrice,
-        total,
-        customerName: name,
-        phone,
-        email,
-        customerInput,
-        notes,
-      }),
-    [code, productName, option, qty, unitPrice, total, name, phone, email, customerInput, notes],
-  );
+  const selectedPay = PAYMENT_METHODS.find((m) => m.id === payMethod);
 
   function validate() {
     if (name.trim().length < 2) return "يرجى إدخال الاسم الكامل";
@@ -79,15 +62,7 @@ export default function OrderForm({
     return "";
   }
 
-  function goSummary(e: React.FormEvent) {
-    e.preventDefault();
-    const v = validate();
-    if (v) return setError(v);
-    setError("");
-    setStep("summary");
-  }
-
-  async function confirm() {
+  async function createOrder() {
     setLoading(true);
     setError("");
     try {
@@ -103,17 +78,18 @@ export default function OrderForm({
           email: email.trim(),
           customerInput,
           notes,
+          paymentMethod: payMethod,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "خطأ");
-      const c: string = data.order.code;
-      setCode(c);
+      setCode(data.order.code);
+      setOrderId(data.order.id);
       try {
         const saved = JSON.parse(localStorage.getItem("bfix-orders") || "[]");
         saved.unshift({
           id: data.order.id,
-          code: c,
+          code: data.order.code,
           productName: data.order.productName,
           qty,
           total: total.toFixed(2),
@@ -121,6 +97,27 @@ export default function OrderForm({
         });
         localStorage.setItem("bfix-orders", JSON.stringify(saved.slice(0, 50)));
       } catch {}
+      setStep("proof");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "حدث خطأ");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function submitProof() {
+    if (!proofText.trim()) return setError("يرجى إدخال رقم/وصف السند أو رابط لقطة الشاشة");
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/orders/${orderId}/proof`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ proof: proofText.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "خطأ");
+      setProofSubmitted(true);
       setStep("done");
     } catch (err) {
       setError(err instanceof Error ? err.message : "حدث خطأ");
@@ -129,111 +126,166 @@ export default function OrderForm({
     }
   }
 
-  const input =
-    "w-full rounded-xl bg-black/30 px-4 py-3 text-sm outline-none ring-1 ring-white/10 focus:ring-gold/60 placeholder:text-white/35";
-
-  /* ---------- DONE ---------- */
+  /* ═══════ DONE ═══════ */
   if (step === "done") {
     return (
-      <section className="glass fade-up rounded-3xl p-5 text-center">
-        <div className="text-5xl">🎉</div>
-        <h2 className="mt-2 text-xl font-black">تم إنشاء طلبك بنجاح</h2>
-        <p className="mt-1 text-sm text-white/60">رقم الطلب</p>
-        <div className="mx-auto mt-1 inline-block rounded-xl bg-gold/10 px-4 py-1.5 font-mono text-lg font-black tracking-wider text-gold ring-1 ring-gold/30">
+      <div className="surface fade-up space-y-4 p-5 text-center" style={{ borderRadius: "var(--radius-xl)" }}>
+        <div className="text-5xl">✅</div>
+        <h2 className="text-xl font-black">تم إرسال طلبك بنجاح</h2>
+        <div className="mx-auto inline-block rounded-xl px-4 py-1.5 font-mono text-lg font-black tracking-wider"
+          style={{ background: "rgba(212,160,23,0.12)", color: "var(--gold)", border: "1px solid rgba(212,160,23,0.25)" }}>
           {code}
         </div>
-        <p className="mt-3 text-sm text-white/60">
-          أرسل الطلب للإدارة الآن لإتمام الدفع والتسليم الفوري — الرسالة جاهزة
-          تلقائياً.
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          تم إرسال إثبات الدفع إلى الإدارة.<br />
+          إذا كانت بيانات التحويل صحيحة، سيتم شحن حسابك في أقرب وقت.
         </p>
-        <div className="mt-4 grid gap-2">
-          <a
-            href={whatsappLink(message)}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 py-3.5 text-sm font-black text-black active:scale-[0.98]"
-          >
-            💬 إرسال الطلب عبر واتساب
-          </a>
-          <a
-            href={telegramLink(message)}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center justify-center gap-2 rounded-xl bg-[#229ED9] px-4 py-3.5 text-sm font-black text-white active:scale-[0.98]"
-          >
-            ✈️ إرسال الطلب عبر تليجرام
-          </a>
-          <button
-            onClick={() => navigator.clipboard?.writeText(message)}
-            className="rounded-xl bg-white/5 px-4 py-2.5 text-xs font-bold text-white/70 ring-1 ring-white/10"
-          >
-            نسخ تفاصيل الطلب
-          </button>
+        <div className="rounded-xl p-3 text-sm" style={{ background: "var(--surface-2)" }}>
+          <div className="font-bold" style={{ color: "var(--text-primary)" }}>📋 ملخص الطلب</div>
+          <div style={{ color: "var(--text-secondary)" }}>{productName} × {qty} — ${total.toLocaleString()}</div>
+          <div style={{ color: "var(--text-secondary)" }}>💳 {selectedPay?.name}</div>
         </div>
-      </section>
+      </div>
     );
   }
 
-  /* ---------- SUMMARY ---------- */
-  if (step === "summary") {
-    const rows: [string, string][] = [
-      ["الخدمة", productName],
-      ...(option ? ([["الخيار / المدة", option.name]] as [string, string][]) : []),
-      ["الكمية", String(qty)],
-      ["سعر الوحدة", `$${unitPrice.toLocaleString()}`],
-      ["الاسم", name],
-      ["الهاتف", phone],
-      ...(email ? ([["البريد", email]] as [string, string][]) : []),
-      ...(customerInput ? ([["بيانات الخدمة", customerInput]] as [string, string][]) : []),
-      ...(notes ? ([["ملاحظات", notes]] as [string, string][]) : []),
-    ];
+  /* ═══════ PROOF ═══════ */
+  if (step === "proof") {
     return (
-      <section className="glass fade-up rounded-3xl p-5">
-        <h2 className="text-base font-black">ملخص الطلب</h2>
-        <dl className="mt-3 divide-y divide-white/5 text-sm">
-          {rows.map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-4 py-2">
-              <dt className="shrink-0 text-white/50">{k}</dt>
-              <dd className="text-left font-bold break-words">{v}</dd>
+      <div className="surface fade-up space-y-4 p-5" style={{ borderRadius: "var(--radius-xl)" }}>
+        <div className="text-center">
+          <div className="text-4xl">📸</div>
+          <h2 className="mt-2 text-lg font-black">أرسل إثبات الدفع</h2>
+          <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>
+            أرسل لقطة شاشة للتحويل أو رقم السند أو وصف التحويل
+          </p>
+        </div>
+
+        <div className="rounded-xl p-3 text-sm" style={{ background: "var(--surface-2)" }}>
+          <div className="font-black" style={{ color: "var(--gold)" }}>الطلب: {code}</div>
+          <div style={{ color: "var(--text-secondary)" }}>{productName} × {qty} — ${total.toLocaleString()}</div>
+          <div style={{ color: "var(--text-secondary)" }}>طريقة الدفع: {selectedPay?.name}</div>
+          <div style={{ color: "var(--text-secondary)" }}>المبلغ المطلوب: <span className="font-black" style={{ color: "var(--gold)" }}>${total.toLocaleString()}</span></div>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-bold" style={{ color: "var(--text-secondary)" }}>
+            رقم السند / رابط لقطة الشاشة / وصف التحويل
+          </label>
+          <textarea
+            value={proofText}
+            onChange={(e) => setProofText(e.target.value)}
+            rows={3}
+            placeholder="مثال: رقم التحويل 123456 أو رابط صورة الإثبات"
+            className={inputCls}
+          />
+        </div>
+
+        {error && <p className="text-sm font-bold text-rose-500">{error}</p>}
+
+        <button onClick={submitProof} disabled={loading} className="gold-btn oneui-btn w-full py-3.5 text-base disabled:opacity-60">
+          {loading ? "جاري الإرسال..." : "إرسال إثبات الدفع"}
+        </button>
+        <button onClick={() => setStep("confirm")} className="oneui-btn w-full py-3"
+          style={{ background: "var(--surface-2)", color: "var(--text-secondary)" }}>
+          رجوع
+        </button>
+      </div>
+    );
+  }
+
+  /* ═══════ CONFIRM (payment method selected) ═══════ */
+  if (step === "confirm" && selectedPay) {
+    return (
+      <div className="surface fade-up space-y-4 p-5" style={{ borderRadius: "var(--radius-xl)" }}>
+        <h2 className="text-lg font-black">تأكيد الطلب والدفع</h2>
+
+        <div className="rounded-xl p-4" style={{ background: "var(--surface-2)" }}>
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-3xl">{selectedPay.icon}</span>
+            <div>
+              <div className="font-black">{selectedPay.name}</div>
+              <div className="text-sm" style={{ color: "var(--text-secondary)" }}>حوّل المبلغ إلى:</div>
+            </div>
+          </div>
+          {selectedPay.details.map((d, i) => (
+            <div key={i} className="flex items-center justify-between rounded-lg p-3 mb-2"
+              style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+              <span className="font-mono text-lg font-black" dir="ltr" style={{ color: "var(--gold)" }}>{d}</span>
+              <button onClick={() => navigator.clipboard?.writeText(d)}
+                className="rounded-lg px-3 py-1 text-xs font-bold"
+                style={{ background: "var(--surface-3)", color: "var(--text-secondary)" }}>
+                نسخ
+              </button>
             </div>
           ))}
-          <div className="flex justify-between py-3">
-            <dt className="font-black">الإجمالي</dt>
-            <dd className="text-xl font-black text-gold">${total.toLocaleString()}</dd>
-          </div>
-        </dl>
-        {error && <p className="text-sm font-bold text-rose-400">{error}</p>}
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          <button
-            onClick={() => setStep("form")}
-            className="rounded-xl bg-white/5 px-4 py-3 text-sm font-bold ring-1 ring-white/10"
-          >
-            تعديل
-          </button>
-          <button
-            disabled={loading}
-            onClick={confirm}
-            className="gold-btn col-span-2 rounded-xl px-4 py-3 text-sm font-black disabled:opacity-60"
-          >
-            {loading ? "جاري إنشاء الطلب..." : "تأكيد وإنشاء الطلب"}
-          </button>
         </div>
-      </section>
+
+        <div className="rounded-xl p-3 text-sm" style={{ background: "var(--surface-2)" }}>
+          <div className="flex justify-between"><span style={{ color: "var(--text-secondary)" }}>الخدمة</span><span className="font-bold">{productName}</span></div>
+          {option && <div className="flex justify-between mt-1"><span style={{ color: "var(--text-secondary)" }}>الخيار</span><span className="font-bold">{option.name}</span></div>}
+          <div className="flex justify-between mt-1"><span style={{ color: "var(--text-secondary)" }}>الكمية</span><span className="font-bold">{qty}</span></div>
+          <div className="flex justify-between mt-2 pt-2" style={{ borderTop: "1px solid var(--border)" }}>
+            <span className="font-black">المبلغ المطلوب</span>
+            <span className="text-xl font-black" style={{ color: "var(--gold)" }}>${total.toLocaleString()}</span>
+          </div>
+        </div>
+
+        {error && <p className="text-sm font-bold text-rose-500">{error}</p>}
+
+        <button onClick={createOrder} disabled={loading} className="gold-btn oneui-btn w-full py-3.5 text-base disabled:opacity-60">
+          {loading ? "جاري إنشاء الطلب..." : `شراء — $${total.toLocaleString()}`}
+        </button>
+        <button onClick={() => setStep("payment")} className="oneui-btn w-full py-3"
+          style={{ background: "var(--surface-2)", color: "var(--text-secondary)" }}>
+          تغيير طريقة الدفع
+        </button>
+      </div>
     );
   }
 
-  /* ---------- FORM ---------- */
+  /* ═══════ PAYMENT METHOD SELECTION ═══════ */
+  if (step === "payment") {
+    return (
+      <div className="surface fade-up space-y-4 p-5" style={{ borderRadius: "var(--radius-xl)" }}>
+        <h2 className="text-lg font-black">اختر طريقة الدفع</h2>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>المبلغ المطلوب: <span className="font-black" style={{ color: "var(--gold)" }}>${total.toLocaleString()}</span></p>
+
+        <div className="space-y-2">
+          {PAYMENT_METHODS.map((m) => (
+            <button
+              key={m.id}
+              onClick={() => { setPayMethod(m.id); setStep("confirm"); }}
+              className="card-hover flex items-center gap-3 w-full p-4 text-right"
+              style={{ borderRadius: "var(--radius-md)", background: "var(--surface-2)", border: "1px solid var(--border)" }}
+            >
+              <span className="text-2xl">{m.icon}</span>
+              <div className="flex-1">
+                <div className="font-bold" style={{ color: "var(--text-primary)" }}>{m.name}</div>
+                <div className="text-xs font-mono" dir="ltr" style={{ color: "var(--text-tertiary)" }}>{m.details[0]}</div>
+              </div>
+              <span style={{ color: "var(--text-tertiary)" }}>←</span>
+            </button>
+          ))}
+        </div>
+
+        <button onClick={() => setStep("form")} className="oneui-btn w-full py-3"
+          style={{ background: "var(--surface-2)", color: "var(--text-secondary)" }}>
+          رجوع
+        </button>
+      </div>
+    );
+  }
+
+  /* ═══════ FORM (default) ═══════ */
   return (
-    <form onSubmit={goSummary} className="surface fade-up space-y-3" style={{ borderRadius: "var(--radius-xl)", padding: "1.25rem" }}>
+    <form onSubmit={(e) => { e.preventDefault(); const v = validate(); if (v) return setError(v); setError(""); setStep("payment"); }}
+      className="surface fade-up space-y-3 p-5" style={{ borderRadius: "var(--radius-xl)" }}>
       <h2 className="text-base font-black">اطلب الآن</h2>
 
       {!customer && (
-        <button
-          type="button"
-          onClick={() => setShowAuth(true)}
-          className="oneui-btn w-full"
-          style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}
-        >
+        <button type="button" onClick={() => setShowAuth(true)} className="oneui-btn w-full"
+          style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
           👤 سجّل دخولك لتعبئة البيانات تلقائياً
         </button>
       )}
@@ -253,18 +305,14 @@ export default function OrderForm({
           <div className="mb-1.5 text-xs font-bold" style={{ color: "var(--text-tertiary)" }}>اختر المدة / الباقة</div>
           <div className="grid grid-cols-3 gap-2">
             {options.map((o) => (
-              <button
-                type="button"
-                key={o.id}
-                onClick={() => setOptionId(o.id)}
+              <button type="button" key={o.id} onClick={() => setOptionId(o.id)}
                 className="oneui-btn px-2 py-2.5 text-center"
                 style={{
                   background: o.id === optionId ? "linear-gradient(135deg, #ffe58a, #f5c542, #d4a017)" : "var(--surface-2)",
                   color: o.id === optionId ? "var(--text-on-gold)" : "var(--text-secondary)",
                   border: o.id === optionId ? "none" : "1px solid var(--border)",
                   boxShadow: o.id === optionId ? "var(--shadow-gold)" : "none",
-                }}
-              >
+                }}>
                 <div className="text-xs font-black">{o.name}</div>
                 <div className="text-[11px] font-bold opacity-80">${Number(o.price)}</div>
               </button>
@@ -282,20 +330,20 @@ export default function OrderForm({
         </div>
       </div>
 
-      <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="الاسم الكامل *" className="oneui-input" />
-      <input required type="tel" dir="ltr" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+967 7xx xxx xxx *" className="oneui-input text-right" />
-      <input type="email" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="البريد الإلكتروني (اختياري)" className="oneui-input text-right" />
+      <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="الاسم الكامل *" className={inputCls} />
+      <input required type="tel" dir="ltr" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+967 7xx xxx xxx *" className={`${inputCls} text-right`} />
+      <input type="email" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="البريد الإلكتروني (اختياري)" className={`${inputCls} text-right`} />
       {requiredInfo && (
         <div>
           <div className="mb-1 text-xs font-bold" style={{ color: "var(--gold)" }}>📝 مطلوب: {requiredInfo}</div>
-          <textarea value={customerInput} onChange={(e) => setCustomerInput(e.target.value)} rows={2} placeholder={requiredInfo} className="oneui-input" />
+          <textarea value={customerInput} onChange={(e) => setCustomerInput(e.target.value)} rows={2} placeholder={requiredInfo} className={inputCls} />
         </div>
       )}
-      <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="ملاحظات إضافية (اختياري)" rows={2} className="oneui-input" />
+      <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="ملاحظات إضافية (اختياري)" rows={2} className={inputCls} />
 
       {error && <p className="text-sm font-bold text-rose-500">{error}</p>}
-      <button className="gold-btn oneui-btn w-full py-3.5 text-base">
-        مراجعة الطلب — ${total.toLocaleString()}
+      <button type="submit" className="gold-btn oneui-btn w-full py-3.5 text-base">
+        اختيار طريقة الدفع — ${total.toLocaleString()}
       </button>
     </form>
   );

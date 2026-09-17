@@ -92,11 +92,35 @@ export const orders = pgTable("orders", {
   total: numeric("total", { precision: 12, scale: 2 }),
   notes: text("notes"),
   channel: text("channel"),
+  paymentMethod: text("payment_method"),
+  paymentAccount: text("payment_account"),
+  paymentProof: text("payment_proof"),
+  paymentStatus: text("payment_status").notNull().default("awaiting"),
+  paymentReviewedAt: timestamp("payment_reviewed_at"),
   status: text("status").notNull().default("pending"),
   adminNote: text("admin_note"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+
+export const PAYMENT_METHODS = [
+  { id: "jawaly", name: "محفظة جيب", icon: "📱", details: ["777728478"] },
+  { id: "onecash", name: "محفظة وان كاش", icon: "📱", details: ["777728478"] },
+  { id: "bank_karimi_usd", name: "بنك الكريمي — دولار", icon: "🏦", details: ["3211501129"] },
+  { id: "bank_karimi_sar", name: "بنك الكريمي — ريال سعودي", icon: "🏦", details: ["3178533238"] },
+  { id: "bank_karimi_yer", name: "بنك الكريمي — ريال يمني", icon: "🏦", details: ["3211440658"] },
+  { id: "mastercard", name: "مستر كارد", icon: "💳", details: ["5262160051739815"] },
+] as const;
+
+export type PaymentMethodId = (typeof PAYMENT_METHODS)[number]["id"];
+export const PAYMENT_STATUS = ["awaiting", "submitted", "accepted", "rejected"] as const;
+export type PaymentStatusType = (typeof PAYMENT_STATUS)[number];
+export const PAYMENT_STATUS_LABELS: Record<PaymentStatusType, string> = {
+  awaiting: "في انتظار الدفع",
+  submitted: "تم إرسال الإثبات",
+  accepted: "تم قبول الدفع ✅",
+  rejected: "تم رفض الدفع ❌",
+};
 
 export const orderItems = pgTable("order_items", {
   id: serial("id").primaryKey(),

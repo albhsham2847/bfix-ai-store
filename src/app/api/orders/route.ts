@@ -7,9 +7,16 @@ export async function POST(req: Request) {
     const customerName = String(b.customerName ?? "").trim();
     const phone = String(b.phone ?? "").trim();
     const productId = Number(b.productId);
+    const paymentMethod = String(b.paymentMethod ?? "").trim();
     if (!productId || customerName.length < 2 || phone.replace(/\D/g, "").length < 7) {
       return NextResponse.json(
         { error: "يرجى إدخال الاسم ورقم هاتف صحيح" },
+        { status: 400 },
+      );
+    }
+    if (!paymentMethod) {
+      return NextResponse.json(
+        { error: "يرجى اختيار طريقة الدفع" },
         { status: 400 },
       );
     }
@@ -23,6 +30,7 @@ export async function POST(req: Request) {
       telegram: b.telegram ? String(b.telegram).trim().slice(0, 100) : null,
       customerInput: b.customerInput ? String(b.customerInput).slice(0, 1000) : null,
       notes: b.notes ? String(b.notes).slice(0, 1000) : null,
+      paymentMethod,
     });
     return NextResponse.json(result);
   } catch (e) {

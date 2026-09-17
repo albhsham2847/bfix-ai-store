@@ -83,5 +83,16 @@ export async function migrateSchema() {
       subtotal NUMERIC(12,2) NOT NULL,
       customer_input TEXT
     );
+
+    -- Add payment columns if they don't exist (idempotent)
+    DO $$ BEGIN
+      ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT;
+      ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_account TEXT;
+      ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_proof TEXT;
+      ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'awaiting';
+      ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_reviewed_at TIMESTAMP;
+      ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_reject_reason TEXT;
+    EXCEPTION WHEN duplicate_column THEN NULL;
+    END $$;
   `);
 }
