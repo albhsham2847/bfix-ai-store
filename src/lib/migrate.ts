@@ -84,15 +84,21 @@ export async function migrateSchema() {
       customer_input TEXT
     );
 
-    -- Add payment columns if they don't exist (idempotent)
-    DO $$ BEGIN
-      ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT;
-      ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_account TEXT;
-      ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_proof TEXT;
-      ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'awaiting';
-      ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_reviewed_at TIMESTAMP;
-      ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_reject_reason TEXT;
-    EXCEPTION WHEN duplicate_column THEN NULL;
-    END $$;
   `);
+
+  // Add payment columns idempotently (runs every time but IF NOT EXISTS is safe)
+  await db.execute(sql`
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method TEXT;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_account TEXT;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_proof TEXT;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_reviewed_at TIMESTAMP;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_reject_reason TEXT;
+  `);
+
+  // Add payment_status with default if missing
+  try {
+    await db.execute(sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'awaiting'`);
+  } catch {
+    // Column may already exist with different constraint
+  }
 }

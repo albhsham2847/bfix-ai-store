@@ -17,16 +17,10 @@ let migrated = false;
 export async function ensureSeeded() {
   if (seeded) return;
 
-  // Run migration if tables don't exist
+  // Always run migration (idempotent — safe to re-run)
   if (!migrated) {
-    try {
-      await db.select({ value: count() }).from(categories);
-      migrated = true;
-    } catch {
-      // Table doesn't exist → run migration
-      await migrateSchema();
-      migrated = true;
-    }
+    await migrateSchema();
+    migrated = true;
   }
 
   // Check and seed categories/products individually for resilience
