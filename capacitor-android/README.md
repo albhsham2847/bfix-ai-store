@@ -1,62 +1,69 @@
-# 📱 تحويل B-Fix Store إلى APK
+# 📱 B-Fix Software | AI Store — تطبيق Android
 
-## الطريقة 1: PWABuilder (الأسهل — بدون تنصيب أي شيء)
+تطبيق Android أصلي بالكامل — الواجهة مدمجة داخل APK، يعمل بدون رابط خارجي.
 
-1. افتح: **https://www.pwabuilder.com**
-2. أدخل: `https://bfix-ai-store.vercel.app`
-3. اضغط **Start** → سيكتشف التطبيق تلقائياً
-4. اضغط **Package for Stores** → اختر **Android**
-5. اضبط:
-   - **App name**: `B-Fix Software | AI Store`
-   - **Package ID**: `com.bfixsoftware.aistore`
-   - **Display**: `Standalone`
-   - **Theme color**: `#070A12`
-6. اضغط **Generate Package**
-7. حمّل **APK** مباشرة!
-
-> ✅ هذه الطريقة لا تحتاج أي برنامج — فقط متصفح
-
----
-
-## الطريقة 2: على جهازك (Android Studio)
+## ⚡ الطريقة الأسرع (5 دقائق)
 
 ### المتطلبات
-- [Android Studio](https://developer.android.com/studio) مثبت
-- [Java JDK 17+](https://adoptium.net/)
 - [Node.js 18+](https://nodejs.org/)
+- [Java JDK 17](https://adoptium.net/)
+- [Android Studio](https://developer.android.com/studio) (أو فقط Command-line tools)
 
-### الخطوات
+### البناء
 ```bash
-# 1. ادخل مجلد المشروع
 cd capacitor-android
-
-# 2. نفّذ أمر البناء
 chmod +x build-apk.sh
 ./build-apk.sh
-
-# 3. الملف الناتج:
-# capacitor-android/bfix-store-debug.apk
 ```
 
-### للإصدار النهائي (Google Play):
+### الناتج
+```
+capacitor-android/bfix-store-v1.0.0.apk
+```
+ثبّته على هاتفك مباشرة! 🎉
+
+---
+
+## 📋 ما يتضمنه التطبيق
+
+| الميزة | الوصف |
+|---|---|
+| 🏠 الرئيسية | أقسام + خدمات مميزة + إحصائيات |
+| 🔍 البحث | بحث فئرتر بالقسم والاسم |
+| 📦 تفاصيل المنتج | خيارات + كمية + اختيار الدفع |
+| 💳 الدفع | 6 طرق دفع + إرسال واتساب |
+| 💰 شحن الرصيد | مبلغ + طريقة دفع + واتساب |
+| 💬 الدردشة | محادثة مباشرة مع الإدارة |
+| 📋 الطلبات | تتبع الطلبات المحلية |
+| 👤 الملف الشخصي | رصيد + بيانات + تسجيل خروج |
+| 🔐 تسجيل دخول | هاتف + كلمة مرور + حفظ تلقائي |
+
+---
+
+## 🔧 تعديلات
+
+### تغيير رابط الـ API
+في `www/app.js`، سطر 8:
+```javascript
+const API = 'https://bfix-ai-store.vercel.app';
+```
+
+### تغيير الألوان
+في `www/style.css`، متغيرات `:root`
+
+### تغيير اسم التطبيق
+في `capacitor.config.json`:
+```json
+"appName": "اسم التطبيق الجديد"
+```
+
+---
+
+## 🏪 رفع على Google Play
+
 ```bash
-cd android
-./gradlew assembleRelease    # APK موقّع
-./gradlew bundleRelease      # AAB لـ Google Play
+cd capacitor-android/android
+./gradlew bundleRelease
 ```
+الملل الناتج: `app/build/outputs/bundle/release/app-release.aab`
 
----
-
-## الطريقة 3: عبر GitHub Actions (أوتوماتيكي)
-
-انظر ملف `.github/workflows/android.yml` في المستودع.
-
----
-
-## رفع التطبيق على Google Play
-
-1. أنشئ حساب مطور: https://play.google.com/console/signup ($25)
-2. Google Play Console → Create App
-3. ارفع ملف `.aab` من البناء
-4. أضف وصف + screenshots + أيقونة
-5. انشر!
