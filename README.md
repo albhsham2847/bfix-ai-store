@@ -57,3 +57,12 @@ https://github.com/albhsham2847/bfix-ai-store/settings/secrets/actions
 
 ### الخطوة 3: شغّل الـ workflow
 GitHub → Actions → Build Android APK/AAB → Run workflow
+
+---
+
+## 📱 بناء APK
+
+راجع [`capacitor-android/README.md`](capacitor-android/README.md) لثلاث طرق لبناء APK:
+1. **PWABuilder** (الأسهل — بدون برامج)
+2. **Android Studio** (على جهازك)
+3. **GitHub Actions** (أوتوماتيكي)
