@@ -15,6 +15,8 @@ const statusColors: Record<string, string> = {
   cancelled: "rgba(220,38,38,0.15)",
 };
 
+import BackButton from "@/components/BackButton";
+
 export default function OrdersPage() {
   const [list, setList] = useState<Saved[]>([]);
   const [status, setStatus] = useState<Record<string, Remote>>({});
@@ -50,6 +52,7 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-4 pt-4">
+      <div className="mb-3"><BackButton /></div>
       <h1 className="text-xl font-black">طلباتي</h1>
 
       <form onSubmit={doTrack} className="surface flex gap-2 p-3" style={{ borderRadius: "var(--radius-md)" }}>

@@ -100,3 +100,10 @@ export async function migrateSchema() {
     await pool.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_status TEXT DEFAULT 'awaiting'");
   } catch { /* exists */ }
 }
+
+  // Promotions table
+  try { await pool.query(`CREATE TABLE IF NOT EXISTS promotions (
+    id SERIAL PRIMARY KEY, title TEXT NOT NULL, body TEXT,
+    image TEXT, link TEXT, category_slug TEXT,
+    active BOOLEAN NOT NULL DEFAULT true, created_at TIMESTAMP NOT NULL DEFAULT now()
+  )`); } catch {}

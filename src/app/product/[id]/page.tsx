@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getProduct } from "@/lib/store";
 import OrderForm from "@/components/OrderForm";
+import BackButton from "@/components/BackButton";
 
 export const dynamic = "force-dynamic";
 

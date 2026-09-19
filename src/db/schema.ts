@@ -219,3 +219,15 @@ export type OrderItem = typeof orderItems.$inferSelect;
 export type TopupRequest = typeof topupRequests.$inferSelect;
 export type Message = typeof messages.$inferSelect;
 export type LoginLog = typeof loginLogs.$inferSelect;
+
+export const promotions = pgTable("promotions", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  body: text("body"),
+  image: text("image"),
+  link: text("link"),
+  categorySlug: text("category_slug"),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+export type Promotion = typeof promotions.$inferSelect;

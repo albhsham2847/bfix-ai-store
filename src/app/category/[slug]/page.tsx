@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCategoryBySlug, getProductsByCategory } from "@/lib/store";
 import ProductCard from "@/components/ProductCard";
+import BackButton from "@/components/BackButton";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export default async function CategoryPage({
 
   return (
     <div className="space-y-5 pt-4">
-      <Link href="/" className="text-xs font-bold" style={{ color: "var(--text-tertiary)" }}>← الرئيسية</Link>
+      <BackButton label="الأقسام" />
       <section
         className={`fade-up relative overflow-hidden bg-gradient-to-br ${cat.gradient} p-5 text-black shadow-xl`}
         style={{ borderRadius: "var(--radius-xl)" }}

@@ -9,12 +9,15 @@ const links = [
   { href: CONTACT.facebook, label: "فيسبوك", sub: "صفحتنا الرسمية", icon: "📘", bg: "#1877F2", fg: "#fff" },
 ];
 
+import BackButton from "@/components/BackButton";
+
 export default function ContactPage() {
   return (
     <div className="space-y-4 pt-4">
       <section className="surface fade-up p-5 text-center" style={{ borderRadius: "var(--radius-xl)" }}>
         <div className="text-5xl">🤝</div>
-        <h1 className="mt-2 text-xl font-black">تواصل مع الإدارة</h1>
+        <div className="mb-3"><BackButton /></div>
+      <h1 className="mt-2 text-xl font-black">تواصل مع الإدارة</h1>
         <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>فريقنا متاح على مدار الساعة للرد على استفساراتك</p>
       </section>
       <div className="grid gap-2.5">
