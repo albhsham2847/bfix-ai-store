@@ -6,53 +6,43 @@ import { STATUS_LABELS, PAYMENT_STATUS_LABELS, type OrderStatus, type PaymentSta
 
 export const dynamic = "force-dynamic";
 
-const payColors: Record<string, string> = {
-  awaiting: "rgba(212,160,23,0.15)",
-  submitted: "rgba(37,99,235,0.15)",
-  accepted: "rgba(22,163,74,0.15)",
-  rejected: "rgba(220,38,38,0.15)",
+const psBadge: Record<string, string> = {
+  awaiting: "admin-badge-warning", submitted: "admin-badge-info", accepted: "admin-badge-success", rejected: "admin-badge-danger",
 };
 
 export default async function AdminOrders() {
   if (!(await isAdmin())) redirect("/admin/login");
   const list = await getOrders();
+
   return (
-    <div className="space-y-3">
-      <h1 className="text-xl font-black">الطلبات ({list.length})</h1>
-      {list.length === 0 && (
-        <div className="surface p-6 text-center text-sm" style={{ borderRadius: "var(--radius-md)", color: "var(--text-tertiary)" }}>
-          لا توجد طلبات
-        </div>
-      )}
-      {list.map((o) => {
-        const ps = (o.paymentStatus ?? "awaiting") as PaymentStatusType;
-        return (
-          <Link key={o.id} href={`/admin/orders/${o.id}`}
-            className="surface card-hover block p-4 text-sm" style={{ borderRadius: "var(--radius-md)" }}>
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-mono text-xs font-black" style={{ color: "var(--gold)" }}>{o.code ?? `#${o.id}`}</span>
-              <div className="flex gap-1">
-                <span className="rounded-full px-2 py-0.5 text-[10px] font-bold"
-                  style={{ background: payColors[ps] ?? "var(--surface-2)", color: "var(--text-primary)" }}>
-                  {PAYMENT_STATUS_LABELS[ps]}
-                </span>
-                <span className="rounded-full px-2 py-0.5 text-[10px] font-bold"
-                  style={{ background: "var(--surface-2)", color: "var(--text-secondary)" }}>
-                  {STATUS_LABELS[o.status as OrderStatus] ?? o.status}
-                </span>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 style={{ fontSize: "1.5rem", fontWeight: 900 }}>الطلبات</h1>
+        <span className="admin-badge admin-badge-info">{list.length} طلب</span>
+      </div>
+      {list.length === 0 && <div className="admin-card text-center" style={{ color: "var(--admin-text-3)" }}>لا توجد طلبات</div>}
+      <div className="space-y-2">
+        {list.map((o) => {
+          const ps = (o.paymentStatus ?? "awaiting") as PaymentStatusType;
+          return (
+            <Link key={o.id} href={`/admin/orders/${o.id}`} className="admin-card block" style={{ textDecoration: "none" }}>
+              <div className="flex items-center justify-between gap-2">
+                <span style={{ fontFamily: "monospace", fontSize: "0.75rem", fontWeight: 800, color: "var(--admin-gold)" }}>{o.code ?? `#${o.id}`}</span>
+                <div className="flex gap-1">
+                  <span className={`admin-badge ${psBadge[ps] ?? "admin-badge-info"}`}>{PAYMENT_STATUS_LABELS[ps]}</span>
+                  <span className="admin-badge admin-badge-purple">{STATUS_LABELS[o.status as OrderStatus] ?? o.status}</span>
+                </div>
               </div>
-            </div>
-            <div className="mt-1 font-extrabold" style={{ color: "var(--text-primary)" }}>{o.productName}</div>
-            <div className="mt-0.5 flex justify-between text-xs" style={{ color: "var(--text-secondary)" }}>
-              <span>{o.customerName} · <span dir="ltr">{o.phone}</span></span>
-              <span className="font-black" style={{ color: "var(--gold)" }}>${Number(o.total ?? 0)}</span>
-            </div>
-            {ps === "submitted" && (
-              <div className="mt-1 text-[11px] font-bold" style={{ color: "#2563eb" }}>🔔 سند جديد بانتظار المراجعة</div>
-            )}
-          </Link>
-        );
-      })}
+              <div style={{ marginTop: "0.5rem", fontWeight: 800, fontSize: "0.875rem", color: "var(--admin-text)" }}>{o.productName}</div>
+              <div className="flex justify-between mt-1" style={{ fontSize: "0.75rem", color: "var(--admin-text-3)" }}>
+                <span>{o.customerName} · <span dir="ltr">{o.phone}</span></span>
+                <span style={{ fontWeight: 900, color: "var(--admin-gold)" }}>${Number(o.total ?? 0)}</span>
+              </div>
+              {ps === "submitted" && <div style={{ marginTop: "0.5rem", fontSize: "0.7rem", fontWeight: 700, color: "#60a5fa" }}>🔔 سند بانتظار المراجعة</div>}
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

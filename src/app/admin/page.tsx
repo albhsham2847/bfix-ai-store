@@ -4,57 +4,84 @@ import { count, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { orders, products, categories, customers, topupRequests, messages } from "@/db/schema";
 import { isAdmin } from "@/lib/admin-auth";
-import { STATUS_LABELS, type OrderStatus } from "@/db/schema";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminHome() {
   if (!(await isAdmin())) redirect("/admin/login");
-  const [[o], [p], [c], [cu], [tu], [unread], byStatus, [rev]] = await Promise.all([
+
+  const [[o], [p], [c], [cu], [tu], [unreadMsgs], [pendingTopups], [submittedOrders], byStatus, [rev]] = await Promise.all([
     db.select({ v: count() }).from(orders),
     db.select({ v: count() }).from(products),
     db.select({ v: count() }).from(categories),
     db.select({ v: count() }).from(customers),
     db.select({ v: count() }).from(topupRequests),
     db.select({ v: count() }).from(messages).where(eq(messages.read, false)),
+    db.select({ v: count() }).from(topupRequests).where(eq(topupRequests.status, "pending")),
+    db.select({ v: count() }).from(orders).where(eq(orders.paymentStatus, "submitted")),
     db.select({ status: orders.status, v: count() }).from(orders).groupBy(orders.status),
     db.select({ v: sql<string>`coalesce(sum(${orders.total}),0)` }).from(orders).where(eq(orders.status, "completed")),
   ]);
 
-  const stats = [
-    ["🛒 الطلبات", o.v, "/admin/orders"],
-    ["👥 العملاء", cu.v, "/admin/customers"],
-    ["💰 طلبات الشحن", tu.v, "/admin/topups"],
-    ["🛍️ الخدمات", p.v, "/admin/products"],
-    ["📁 الأقسام", c.v, "/admin/categories"],
-    ["💬 رسائل جديدة", unread.v, "/admin/customers"],
-  ] as const;
+  const cards = [
+    { label: "إجمالي الطلبات", value: o.v, icon: "🛒", color: "#3b82f6", href: "/admin/orders" },
+    { label: "العملاء", value: cu.v, icon: "👥", color: "#8b5cf6", href: "/admin/customers" },
+    { label: "طلبات الشحن", value: tu.v, icon: "💰", color: "#f59e0b", href: "/admin/topups" },
+    { label: "الخدمات", value: p.v, icon: "🛍️", color: "#22c55e", href: "/admin/products" },
+    { label: "الأقسام", value: c.v, icon: "📁", color: "#06b6d4", href: "/admin/categories" },
+    { label: "إيرادات مكتملة", value: `$${Number(rev.v).toLocaleString()}`, icon: "💎", color: "#f5c542", href: "/admin/orders" },
+  ];
+
+  const alerts = [
+    ...(Number(pendingTopups.v) > 0 ? [{ label: `${pendingTopups.v} طلب شحن بانتظار المراجعة`, href: "/admin/topups", color: "#f59e0b" }] : []),
+    ...(Number(submittedOrders.v) > 0 ? [{ label: `${submittedOrders.v} إثبات دفع بانتظار المراجعة`, href: "/admin/orders", color: "#3b82f6" }] : []),
+    ...(Number(unreadMsgs.v) > 0 ? [{ label: `${unreadMsgs.v} رسالة جديدة من العملاء`, href: "/admin/customers", color: "#8b5cf6" }] : []),
+  ];
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-black">لوحة التحكم</h1>
-      <div className="grid grid-cols-2 gap-2">
-        {stats.map(([l, v, href]) => (
-          <Link key={l} href={href} className="surface card-hover p-4" style={{ borderRadius: "var(--radius-md)" }}>
-            <div className="text-2xl font-black" style={{ color: "var(--gold)" }}>{v}</div>
-            <div className="text-xs" style={{ color: "var(--text-secondary)" }}>{l}</div>
+    <div className="space-y-6">
+      <div>
+        <h1 style={{ fontSize: "1.75rem", fontWeight: 900, color: "var(--admin-text)" }}>لوحة التحكم</h1>
+        <p style={{ color: "var(--admin-text-3)", fontSize: "0.875rem", marginTop: "0.25rem" }}>مرحباً بك في لوحة إدارة B-Fix Software</p>
+      </div>
+
+      {/* Alerts */}
+      {alerts.length > 0 && (
+        <div className="space-y-2">
+          {alerts.map((a, i) => (
+            <Link key={i} href={a.href} className="admin-card flex items-center gap-3" style={{ borderRightColor: a.color, borderRightWidth: 4 }}>
+              <span className="text-xl">🔔</span>
+              <span className="text-sm font-bold" style={{ color: "var(--admin-text)" }}>{a.label}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* Stats Grid */}
+      <div className="admin-grid-3">
+        {cards.map((card) => (
+          <Link key={card.label} href={card.href} className="stat-card admin-fade">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-2xl">{card.icon}</span>
+              <span style={{ width: 8, height: 8, borderRadius: 9999, background: card.color }} />
+            </div>
+            <div style={{ fontSize: "1.75rem", fontWeight: 900, color: "var(--admin-text)" }}>{card.value}</div>
+            <div style={{ fontSize: "0.75rem", color: "var(--admin-text-3)" }}>{card.label}</div>
           </Link>
         ))}
-        <div className="col-span-2 surface p-4" style={{ borderRadius: "var(--radius-md)" }}>
-          <div className="text-2xl font-black" style={{ color: "#22c55e" }}>${Number(rev.v).toLocaleString()}</div>
-          <div className="text-xs" style={{ color: "var(--text-secondary)" }}>إيرادات الطلبات المكتملة</div>
-        </div>
       </div>
-      <div className="surface p-4" style={{ borderRadius: "var(--radius-md)" }}>
-        <h2 className="mb-2 text-sm font-black">الطلبات حسب الحالة</h2>
-        <div className="flex flex-wrap gap-2">
+
+      {/* Quick Status */}
+      <div className="admin-card">
+        <h2 style={{ fontSize: "1rem", fontWeight: 800, marginBottom: "1rem", color: "var(--admin-text)" }}>📊 حالة الطلبات</h2>
+        <div className="flex flex-wrap gap-3">
           {byStatus.map((r) => (
-            <span key={r.status} className="rounded-full px-3 py-1 text-xs font-bold"
-              style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
-              {STATUS_LABELS[r.status as OrderStatus] ?? r.status}: {r.v}
-            </span>
+            <div key={r.status} className="stat-card" style={{ padding: "0.75rem 1.25rem" }}>
+              <div style={{ fontSize: "1.25rem", fontWeight: 900, color: "var(--admin-text)" }}>{r.v}</div>
+              <div style={{ fontSize: "0.7rem", color: "var(--admin-text-3)", textTransform: "capitalize" }}>{r.status}</div>
+            </div>
           ))}
-          {byStatus.length === 0 && <span className="text-xs" style={{ color: "var(--text-tertiary)" }}>لا توجد طلبات</span>}
+          {byStatus.length === 0 && <p style={{ color: "var(--admin-text-3)", fontSize: "0.875rem" }}>لا توجد طلبات بعد</p>}
         </div>
       </div>
     </div>
